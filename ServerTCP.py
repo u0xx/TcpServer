@@ -7,13 +7,12 @@ user_list = []
 
 class TransSever(socketserver.BaseRequestHandler):
     times_out = 20
-    user_addr = ''
     user_now = {}
     user_to = {}
 
     def setup(self):
         print('-' * 40)
-        #self.request.settimeout(self.times_out)
+        self.request.settimeout(self.times_out)
         self.user_addr = "%s(%d)" % (self.client_address[0], self.client_address[1])
         print('connect from %s ' % self.user_addr)
 
@@ -22,7 +21,8 @@ class TransSever(socketserver.BaseRequestHandler):
         while True:
             try:
                 data_byte = conn.recv(2048)
-                print('[client]%s:%s' % (time.ctime(), data_byte.decode()))
+                if data_byte:
+                    print('[client]%s:%s' % (time.ctime(), data_byte.decode()))
             except (socket.timeout, ConnectionAbortedError) as err:
                 print('%s   %s' % (self.user_addr, err))
                 break
@@ -102,7 +102,7 @@ class TransSever(socketserver.BaseRequestHandler):
                     conn.sendall(msg_send_byte)
                     print('%s alive  ' % (data_dic['user']))
 
-            time.sleep(0.1)
+            time.sleep(0.5)
 
     def finish(self):
         print('%s from %s disconnect' % (self.user_addr, self.user_addr))
@@ -116,6 +116,6 @@ class TransSever(socketserver.BaseRequestHandler):
 
 
 if __name__ == '__main__':
-    trans_server = socketserver.ThreadingTCPServer(('0.0.0.0', 12348), TransSever)
+    trans_server = socketserver.ThreadingTCPServer(('localhost', 12348), TransSever)
     print('server run ...')
     trans_server.serve_forever()
